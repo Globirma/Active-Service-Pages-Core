@@ -1,7 +1,12 @@
-﻿using HBooking.domain;
+﻿using AutoMapper;
+using HBooking.Api.Dtos;
+using HBooking.Dal;
+using HBooking.domain;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HBooking.Api.Controllers
 {
@@ -15,54 +20,66 @@ namespace HBooking.Api.Controllers
     public class HotelsController : Controller
     {
         private readonly DataSource _dataSource;
-        public HotelsController(DataSource dataSource) {
+        private readonly DataContext _ctx;
+        private readonly IMapper _mapper;
+        public HotelsController(DataSource dataSource, DataContext ctx, IMapper mapper) {
             _dataSource = dataSource;
+            _ctx = ctx;
+            _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult GetAllHotels()
+        public async Task <IActionResult> GetAllHotels()
         {
-            var hotels = _dataSource.Hotels;
-            return Ok(hotels);
+            var hotels = await _ctx.Hotels.ToListAsync();
+            var HotelsGet = _mapper.Map<List<HotelGetDto>>(hotels);
+            return Ok(HotelsGet);
         }
+
         [HttpGet]
         [Route("{id}")]
-        public IActionResult GetHotelById(int id)
+        public async Task <IActionResult> GetHotelById(int id)
         {
-            var hotels = _dataSource.Hotels;
-            var hotel = hotels.FirstOrDefault(h => h.HotelId == id);
+           var hotel = await _ctx.Hotels.FirstOrDefaultAsync(h => h.HotelId == id);
+
             if (hotel == null)
                 return NotFound();
-            return Ok(hotel);
+
+            var HotelGet = _mapper.Map<HotelGetDto>(hotel);
+            return Ok(HotelGet);
         }
 
         [HttpPost]
-        public IActionResult CreateHotel( [FromBody] Hotel hotel)
+        public async Task<IActionResult> CreateHotel( [FromBody] HotelCreateDto hotel)
         {
-            var hotels = _dataSource.Hotels;
-            hotels.Add(hotel);
-            return CreatedAtAction(nameof(GetHotelById), new {id = hotel.HotelId}, hotel);
+            var domainHotel = _mapper.Map<Hotel>(hotel);
+
+            _ctx.Hotels.Add(domainHotel);
+            await _ctx.SaveChangesAsync();
+            var hotelGet = _mapper.Map<HotelGetDto>(domainHotel);
+
+            return CreatedAtAction(nameof(GetHotelById), new { id = domainHotel.HotelId }, hotelGet);
         }
         [HttpPut]
         [Route ("{id}")]
-        public IActionResult UpdateHotel([FromBody] Hotel Updated, int id)
+        public async Task <IActionResult> UpdateHotel([FromBody] HotelCreateDto Updated, int id)
         {
-          var hotels = _dataSource.Hotels;
-          var old =hotels.FirstOrDefault(h => h.HotelId==id);
-            if (old == null)
-                return NotFound();
-            hotels.Remove(old);
-            hotels.Add(Updated);
+            var update = _mapper.Map<Hotel>(Updated);
+            update.HotelId = id; 
+            _ctx.Hotels.Update(update);
+            await _ctx.SaveChangesAsync();
             return NoContent();
         }
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult DeleteHotel(int id)
+        public async Task<IActionResult> DeleteHotel(int id)
         {
-            var hotels = _dataSource.Hotels;
-            var toDelete = hotels.FirstOrDefault( h => h.HotelId == id);
-                if (toDelete == null)
+            var hotel = await _ctx.Hotels.FirstOrDefaultAsync(h => h.HotelId == id);
+
+            if (hotel == null)
                 return NotFound();
-              hotels.Remove(toDelete);
+
+            _ctx.Hotels.Remove(hotel);
+            await _ctx.SaveChangesAsync();
             return NoContent();
         }
         
