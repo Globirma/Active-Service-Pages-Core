@@ -4,4 +4,9 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\HBooking.Dal\HBooking.Dal.csproj" />
+    <ProjectReference Include="..\HBooking.domain\HBooking.domain.csproj" />
+  </ItemGroup>
+
 </Project>

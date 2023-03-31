@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\HBooking.Dal\HBooking.Dal.csproj" />
     <ProjectReference Include="..\HBooking.domain\HBooking.domain.csproj" />
+    <ProjectReference Include="..\HBooking.services\HBooking.services.csproj" />
   </ItemGroup>
 
 </Project>

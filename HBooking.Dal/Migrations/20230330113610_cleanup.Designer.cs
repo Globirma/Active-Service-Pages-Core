@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HBooking.Dal.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230322134742_Ini")]
-    partial class Ini
+    [Migration("20230330113610_cleanup")]
+    partial class cleanup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -58,19 +58,24 @@ namespace HBooking.Dal.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime?>("CheckInDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CheckOutDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Customer")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("RoomId")
+                    b.Property<int>("HotelId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
 
                     b.HasKey("ReservationId");
+
+                    b.HasIndex("HotelId");
 
                     b.HasIndex("RoomId");
 
@@ -84,7 +89,13 @@ namespace HBooking.Dal.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("HotelId")
+                    b.Property<DateTime?>("BusyFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("BusyTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("HotelId")
                         .HasColumnType("int");
 
                     b.Property<bool>("NeedsRepair")
@@ -105,18 +116,32 @@ namespace HBooking.Dal.Migrations
 
             modelBuilder.Entity("HBooking.domain.Reservation", b =>
                 {
+                    b.HasOne("HBooking.domain.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("HBooking.domain.Room", "Room")
                         .WithMany()
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
 
                     b.Navigation("Room");
                 });
 
             modelBuilder.Entity("HBooking.domain.Room", b =>
                 {
-                    b.HasOne("HBooking.domain.Hotel", null)
+                    b.HasOne("HBooking.domain.Hotel", "Hotel")
                         .WithMany("Rooms")
-                        .HasForeignKey("HotelId");
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
                 });
 
             modelBuilder.Entity("HBooking.domain.Hotel", b =>

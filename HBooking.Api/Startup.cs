@@ -1,6 +1,8 @@
 using HBooking.Dal;
 using HBooking.Dal.Repositories;
 using HBooking.domain.Abstraction.Repositories;
+using HBooking.domain.Abstraction.Services;
+using HBooking.services.Services.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +35,8 @@ namespace HBooking.Api
             var cs = Configuration.GetConnectionString("Default");
             services.AddDbContext<DataContext>(options => { options.UseSqlServer (cs); });
             services.AddAutoMapper(typeof(Startup));
-            services.AddScoped<IHotelsRepository,HotelRepositories>();
+            services.AddScoped<IHotelsRepository,HotelRepositories>();  
+            services.AddScoped<IReservationService, ReservationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
